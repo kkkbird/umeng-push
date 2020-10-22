@@ -77,6 +77,68 @@ type SendParam struct {
 
 	ReceiptUrl  string `json:"receipt_url,omitempty"`  // 开发者接受数据的地址,最大长度256字节
 	ReceiptType string `json:"receipt_type,omitempty"` // 回执数据类型,1:送达回执;2:点击回执;3:送达和点击回执,默认为3
+
+	ChannelProperties AndroidChannelProperties `json:"channel_properties,omitempty"` //可选，厂商通道相关的特殊配置
+}
+
+type AndroidChannelProperties struct {
+	XiaomiChannelID    string `json:"xiaomi_channel_id,omitempty"`   //小米channel_id，具体使用及限制请参考小米推送文档 https://dev.mi.com/console/doc/detail?pId=2086
+	VivoClassification string `json:"vivo_classification,omitempty"` //vivo消息分类：0 运营消息，1 系统消息， 需要到vivo申请，具体使用及限制参考[vivo消息推送分类功能说明]https://dev.vivo.com.cn/documentCenter/doc/359
+	OppoChannelID      string `json:"oppo_channel_id,omitempty"`     //可选， android8以上推送消息需要新建通道，否则消息无法触达用户。push sdk 6.0.5及以上创建了默认的通道:upush_default，消息提交厂商通道时默认添加该通道。如果要自定义通道名称或使用私信，请自行创建通道，推送消息时携带该参数 具体可参考 [oppo通知通道适配] https://open.oppomobile.com/wiki/doc#id=10289
+}
+
+type AndroidPayloadBody struct {
+	Ticker string `json:"ticker"` // 必填,通知栏提示文字
+	Title  string `json:"title"`  // 必填,通知标题
+	Text   string `json:"text"`   // 必填,通知文字描述
+
+	// 可选,状态栏图标ID,R.drawable.[smallIcon],
+	// 如果没有,默认使用应用图标
+	// 图片要求为24*24dp的图标,或24*24px放在drawable-mdpi下
+	// 注意四周各留1个dp的空白像素
+	Icon string `json:"icon,omitempty"`
+
+	// 可选,通知栏拉开后左侧图标ID,R.drawable.[largeIcon],
+	// 图片要求为64*64dp的图标,
+	// 可设计一张64*64px放在drawable-mdpi下,
+	// 注意图片四周留空,不至于显示太拥挤
+	LargeIcon string `json:"largeIcon,omitempty"`
+
+	// 可选,通知栏大图标的URL链接,该字段的优先级大于largeIcon
+	// 该字段要求以http或者https开头
+	Img string `json:"img,omitempty"`
+
+	// 可选,通知声音,R.raw.[sound]
+	// 如果该字段为空,采用SDK默认的声音,即res/raw/下的
+	// umeng_push_notification_default_sound声音文件,如果
+	// SDK默认声音文件不存在,则使用系统默认Notification提示音
+	Sound string `json:"sound,omitempty"`
+
+	BuilderId   string `json:"builder_id,omitempty"`   // 可选,默认为0,用于标识该通知采用的样式,使用该参数时,开发者必须在SDK里面实现自定义通知栏样式
+	PlayVibrate string `json:"play_vibrate,omitempty"` // 可选,收到通知是否震动,默认为"true"
+	PlayLights  string `json:"play_lights,omitempty"`  // 可选,收到通知是否闪灯,默认为"true"
+	PlaySound   string `json:"play_sound,omitempty"`   // 可选,收到通知是否发出声音,默认为"true"
+
+	// 点击"通知"的后续行为,默认为打开app
+	// 可选,默认为"go_app",值可以为:
+	//   "go_app": 打开应用
+	//   "go_url": 跳转到URL
+	//   "go_activity": 打开特定的activity
+	//   "go_custom": 用户自定义内容
+	AfterOpen string `json:"after_open,omitempty"`
+
+	// 当after_open=go_url时,必填
+	// 通知栏点击后跳转的URL,要求以http或者https开头
+	Url string `json:"url,omitempty"`
+
+	// 当after_open=go_activity时,必填
+	// 通知栏点击后打开的Activity
+	Activity string `json:"activity,omitempty"`
+
+	// 当display_type=message时, 必填
+	// 当display_type=notification且
+	// after_open=go_custom时,必填
+	Custom interface{} `json:"custom,omitempty"`
 }
 
 type AndroidPayload struct {
@@ -85,59 +147,7 @@ type AndroidPayload struct {
 	// 必填,消息体
 	// 当display_type=message时,body的内容只需填写custom字段
 	// 当display_type=notification时,body包含如下参数:
-	Body struct {
-		Ticker string `json:"ticker"` // 必填,通知栏提示文字
-		Title  string `json:"title"`  // 必填,通知标题
-		Text   string `json:"text"`   // 必填,通知文字描述
-
-		// 可选,状态栏图标ID,R.drawable.[smallIcon],
-		// 如果没有,默认使用应用图标
-		// 图片要求为24*24dp的图标,或24*24px放在drawable-mdpi下
-		// 注意四周各留1个dp的空白像素
-		Icon string `json:"icon,omitempty"`
-
-		// 可选,通知栏拉开后左侧图标ID,R.drawable.[largeIcon],
-		// 图片要求为64*64dp的图标,
-		// 可设计一张64*64px放在drawable-mdpi下,
-		// 注意图片四周留空,不至于显示太拥挤
-		LargeIcon string `json:"largeIcon,omitempty"`
-
-		// 可选,通知栏大图标的URL链接,该字段的优先级大于largeIcon
-		// 该字段要求以http或者https开头
-		Img string `json:"img,omitempty"`
-
-		// 可选,通知声音,R.raw.[sound]
-		// 如果该字段为空,采用SDK默认的声音,即res/raw/下的
-		// umeng_push_notification_default_sound声音文件,如果
-		// SDK默认声音文件不存在,则使用系统默认Notification提示音
-		Sound string `json:"sound,omitempty"`
-
-		BuilderId   string `json:"builder_id,omitempty"`   // 可选,默认为0,用于标识该通知采用的样式,使用该参数时,开发者必须在SDK里面实现自定义通知栏样式
-		PlayVibrate string `json:"play_vibrate,omitempty"` // 可选,收到通知是否震动,默认为"true"
-		PlayLights  string `json:"play_lights,omitempty"`  // 可选,收到通知是否闪灯,默认为"true"
-		PlaySound   string `json:"play_sound,omitempty"`   // 可选,收到通知是否发出声音,默认为"true"
-
-		// 点击"通知"的后续行为,默认为打开app
-		// 可选,默认为"go_app",值可以为:
-		//   "go_app": 打开应用
-		//   "go_url": 跳转到URL
-		//   "go_activity": 打开特定的activity
-		//   "go_custom": 用户自定义内容
-		AfterOpen string `json:"after_open,omitempty"`
-
-		// 当after_open=go_url时,必填
-		// 通知栏点击后跳转的URL,要求以http或者https开头
-		Url string `json:"url,omitempty"`
-
-		// 当after_open=go_activity时,必填
-		// 通知栏点击后打开的Activity
-		Activity string `json:"activity,omitempty"`
-
-		// 当display_type=message时, 必填
-		// 当display_type=notification且
-		// after_open=go_custom时,必填
-		Custom interface{} `json:"custom,omitempty"`
-	} `json:"body"`
+	Body AndroidPayloadBody `json:"body"`
 
 	// 可选,JSON格式,用户自定义key-value,只对"通知"
 	// (display_type=notification)生效
@@ -145,24 +155,31 @@ type AndroidPayload struct {
 	Extra interface{} `json:"extra,omitempty"`
 }
 
+type IosPayloadApsAlert struct {
+	Title    string `json:"title,omitempty"`
+	Subtitle string `json:"subtitle,omitempty"`
+	Body     string `json:"body,omitempty"`
+}
+
+type IosPayloadAps struct {
+	// 当content-available=1时(静默推送),可选; 否则必填
+	// 可为JSON类型和字符串类型
+	Alert            IosPayloadApsAlert `json:"alert,omitempty"`
+	Badge            int64              `json:"badge,omitempty"`
+	Sound            string             `json:"sound,omitempty"`
+	ContentAvailable int64              `json:"content-available,omitempty"` // 可选,代表静默推送
+	Category         string             `json:"category,omitempty"`          // 可选,注意: ios8才支持该字段
+}
+
+type IosPayloadExtra interface{}
+
 type IosPayload struct {
-	Aps struct {
-		// 当content-available=1时(静默推送),可选; 否则必填
-		// 可为JSON类型和字符串类型
-		Alert struct {
-			Title    string `json:"title,omitempty"`
-			Subtitle string `json:"subtitle,omitempty"`
-			Body     string `json:"body,omitempty"`
-		} `json:"alert,omitempty"`
-		Badge            int64  `json:"badge,omitempty"`
-		Sound            string `json:"sound,omitempty"`
-		ContentAvailable int64  `json:"content-available,omitempty"` // 可选,代表静默推送
-		Category         string `json:"category,omitempty"`          // 可选,注意: ios8才支持该字段
-	} `json:"aps"` // 必填,严格按照APNs定义来填写
+	Aps IosPayloadAps `json:"aps"` // 必填,严格按照APNs定义来填写
 
 	// "key1":"value1",       // 可选,用户自定义内容, "d","p"为友盟保留字段, key不可以是"d","p"
 	// "key2":"value2",
 	// ...
+	IosPayloadExtra
 }
 
 // 状态查询调用参数

@@ -60,6 +60,9 @@ type UmengPush struct {
 }
 
 func NewUmengPush(appKey, AppMasterKey string) *UmengPush {
+	if appKey == "" || AppMasterKey == "" {
+		panic("init umeng push fail")
+	}
 	return &UmengPush{
 		AppKey:       appKey,
 		AppMasterKey: AppMasterKey,
