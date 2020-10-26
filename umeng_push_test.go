@@ -27,25 +27,13 @@ func TestMain(m *testing.M) {
 
 func TestNewUmengPush(t *testing.T) {
 	payload := &IosPayload{
-		Aps: struct {
-			Alert struct {
-				Title    string `json:"title,omitempty"`
-				Subtitle string `json:"subtitle,omitempty"`
-				Body     string `json:"body,omitempty"`
-			} `json:"alert,omitempty"`
-			Badge            int64  `json:"badge,omitempty"`
-			Sound            string `json:"sound,omitempty"`
-			ContentAvailable int64  `json:"content-available,omitempty"`
-			Category         string `json:"category,omitempty"`
-		}{Alert: struct {
-			Title    string `json:"title,omitempty"`
-			Subtitle string `json:"subtitle,omitempty"`
-			Body     string `json:"body,omitempty"`
-		}{
-			Title:    "标题",
-			Subtitle: "子标题",
-			Body:     "内容",
-		}},
+		Aps: IosPayloadAps{
+			Alert: IosPayloadApsAlert{
+				Title:    "标题",
+				Subtitle: "子标题",
+				Body:     "内容",
+			},
+		},
 	}
 	param := &SendParam{
 		Types:        TypeUnicast,

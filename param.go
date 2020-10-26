@@ -171,15 +171,13 @@ type IosPayloadAps struct {
 	Category         string             `json:"category,omitempty"`          // 可选,注意: ios8才支持该字段
 }
 
-type IosPayloadExtra interface{}
-
 type IosPayload struct {
 	Aps IosPayloadAps `json:"aps"` // 必填,严格按照APNs定义来填写
 
 	// "key1":"value1",       // 可选,用户自定义内容, "d","p"为友盟保留字段, key不可以是"d","p"
 	// "key2":"value2",
 	// ...
-	IosPayloadExtra
+	Extra interface{} `json:"extra,omitempty"`
 }
 
 // 状态查询调用参数
